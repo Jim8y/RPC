@@ -52,7 +52,7 @@ namespace RPC
             amount /= 100000000;
             var move = (byte)data;
 
-            // I am gonna check all parameters 
+            // I gonna check all parameters 
             // no matter what.
             Require(Runtime.CallingScriptHash == GAS.Hash);
             Require(Runtime.EntryScriptHash == GAS.Hash);
