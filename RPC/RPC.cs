@@ -10,7 +10,10 @@ using System.Runtime.CompilerServices;
 
 namespace RPC
 {
+    [ManifestExtra("Author", "Jinghui Liao")]
+    [ManifestExtra("Email", "jinghui@wayne.edu")]
     [DisplayName("GAME-RPC")]
+    [ManifestExtra("Description", "This is a rock-paper-scissors game to test the random number.")]
     [SupportedStandards("NEP-11")]
     [ContractPermission("*", "OnNEP11Payment")]
     [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
@@ -58,15 +61,15 @@ namespace RPC
             Require(Runtime.EntryScriptHash == GAS.Hash);
             Require(move == 0 || move == 1 || move == 2);
             Require(amount >= 1);
+            Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount);
 
             if (((Transaction)Runtime.ScriptContainer).Script.Length > 64)
                 throw new Exception("RPC::Transaction script length error.");
 
             // if player wins, he gets 2 GAS
             if (PlayerWin(move))
-            {
-                GAS.Transfer(Runtime.ExecutingScriptHash, from, 2);
-            }
+                // The bigger you play, the more you get
+                GAS.Transfer(Runtime.ExecutingScriptHash, from, 2 * amount);
         }
 
         /// <summary>
