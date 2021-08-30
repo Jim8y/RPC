@@ -6,35 +6,37 @@ using Neo.SmartContract.Framework.Services;
 using System;
 using System.ComponentModel;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace RPC
 {
-    [DisplayName("NFT-RPC")]
+    [DisplayName("GAME-RPC")]
     [SupportedStandards("NEP-11")]
     [ContractPermission("*", "OnNEP11Payment")]
-    [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")]
-    public partial class RPC : Nep11Token<Nep11TokenState>
+    [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
+    public partial class RPC : SmartContract
     {
-        private enum CardType
-        {
-            N,
-            E,
-            O
-        }
-
+        //private enum Move
+        //{
+        //    Rock,
+        //    Paper,
+        //    Scissors
+        //}
 
         [InitialValue("NSuyiLqEfEQZsLJawCbmXW154StRUwdWoM", ContractParameterType.Hash160)]
         static readonly UInt160 Owner = default;
 
-        private static readonly int[] CardTypeMaxNum = { 100, 300, 3000 };
-
-        internal static readonly int[] CardTypeInitialNum = { 0, 100, 300 };
+        /// <summary>
+        /// If the isTure is not ture,
+        /// then the transaction throw exception
+        /// </summary>
+        /// <param name="isTure">true condition, has to be true to run</param>
+        /// <param name="msg">Transaction FAULT reason</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Require(bool isTure, string msg="Invalid") { if (!isTure) throw new Exception($"RPC::{msg}"); }
 
         [Safe]
-        public override string Symbol() => "RPC";
-
-        [Safe]
-        public static bool IsPaused() => StateStorage.IsPaused();
+        public static void CheckPaused() { Require(!StateStorage.IsPaused(), "paused"); }
 
         [Safe]
         public static UInt160 GetOwner()
@@ -43,27 +45,48 @@ namespace RPC
             return owner != null ? (UInt160)owner : Owner;
         }
 
-        public static void OnNEP17Payment(UInt160 from, BigInteger amount, object _)
+        [Safe]
+        public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data)
         {
-            if (IsPaused()) throw new Exception("RPC::OnNEP17Payment: Suspension of sale.");
-
+            CheckPaused();
             amount /= 100000000;
+            var move = (byte)data;
 
-            if (Runtime.CallingScriptHash != GAS.Hash || amount % 2 != 0)
-                throw new Exception("RPC::OnNEP17Payment: The amount must be an integer multiple of 2GAS.");
+            // I am gonna check all parameters 
+            // no matter what.
+            Require(Runtime.CallingScriptHash == GAS.Hash);
+            Require(move ==0 || move ==1 || move ==2);
+            Require(amount >= 1);
 
-           
+            if (((Transaction)Runtime.ScriptContainer).Script.Length > 64)
+                throw new Exception("RPC::Transaction script length error.");
+
+            // if player wins, he gets 2 GAS
+            if (PlayerWin(move))
+            {
+                GAS.Transfer(Runtime.ExecutingScriptHash, from, 2);
+            }
         }
 
-        public static bool UnBoxing(ByteString tokenId)
+        /// <summary>
+        /// Pick the winner
+        /// return `true` if the player wins
+        /// return `false` if the contract wins
+        /// throw exception if draw
+        /// </summary>
+        /// <param name="move">the player more in the rage [0, 2]</param>
+        /// <returns>is player wins </returns>
+        private static bool PlayerWin(byte move)
         {
-            if (Runtime.EntryScriptHash != Runtime.CallingScriptHash) throw new Exception("RPC::UnBoxing: Contract calls are not allowed.");
-            if (((Transaction)Runtime.ScriptContainer).Script.Length > 58) throw new Exception("RPC::UnBoxing: Transaction script length error.");
-
-            return UnBoxingInternal(tokenId);
+            var random = (byte)Runtime.GetRandom() % 3;
+            switch (random - move)
+            {
+                case 1:
+                case -2: return false;
+                case 0: throw new Exception();
+                case -1:
+                default: return true;
+            }
         }
-
-
     }
 }
-

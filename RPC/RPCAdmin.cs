@@ -14,13 +14,11 @@ namespace RPC
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void OwnerOnly() { if (!Runtime.CheckWitness(GetOwner())) throw new Exception("No authorization."); }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Assert(bool isTure, string msg) { if(!isTure) throw new Exception($"RPC::{msg}"); }
 
         public static UInt160 SetOwner(UInt160 newOwner)
         {
             OwnerOnly();
-            Assert(newOwner.IsValid, "RPC::SetOwner: UInt160 is invalid.");
+            Require(!newOwner.IsValid, "RPC::SetOwner: UInt160 is invalid.");
             OwnerMap.Put("owner", newOwner);
             return GetOwner();
         }
@@ -28,7 +26,6 @@ namespace RPC
         public static void _deploy(object _, bool update)
         {
             if (update) return;
-            IndexStorage.Initial();
         }
 
         public static void Update(ByteString nefFile, string manifest)

@@ -1,6 +1,4 @@
 ﻿using Neo.SmartContract.Framework.Services;
-using System;
-using System.Numerics;
 
 namespace RPC
 {
