@@ -23,7 +23,7 @@ namespace RPC
         //    Scissors
         //}
 
-        [InitialValue("NSuyiLqEfEQZsLJawCbmXW154StRUwdWoM", ContractParameterType.Hash160)]
+        [InitialValue("NdNXZuBvxSqhDAnk3AANxubDd5JNrB4d3a", ContractParameterType.Hash160)]
         static readonly UInt160 Owner = default;
 
         /// <summary>
