@@ -11,8 +11,10 @@ namespace RPC
     {
         private static readonly StorageMap OwnerMap = new(Storage.CurrentContext, 0x16);
 
+        public static bool Verify() => Runtime.CheckWitness(GetOwner());
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void OwnerOnly() { if (!Runtime.CheckWitness(GetOwner())) throw new Exception("No authorization."); }
+        private static void OwnerOnly() { if (!Verify()) throw new Exception("No authorization."); }
 
 
         public static UInt160 SetOwner(UInt160 newOwner)
