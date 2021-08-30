@@ -18,7 +18,7 @@ namespace RPC
         public static UInt160 SetOwner(UInt160 newOwner)
         {
             OwnerOnly();
-            Require(newOwner.IsValid, "RPC::SetOwner: UInt160 is invalid.");
+            Require(newOwner.IsValid, "RPC::UInt160 is invalid.");
             OwnerMap.Put("owner", newOwner);
             return GetOwner();
         }
