@@ -33,7 +33,7 @@ namespace RPC
         /// <param name="isTrue">true condition, has to be true to run</param>
         /// <param name="msg">Transaction FAULT reason</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Require(bool isTrue, string msg="Invalid") { if (!isTrue) throw new Exception($"RPC::{msg}"); }
+        private static void Require(bool isTrue, string msg = "Invalid") { if (!isTrue) throw new Exception($"RPC::{msg}"); }
 
         [Safe]
         public static void CheckPaused() { Require(!StateStorage.IsPaused(), "paused"); }
@@ -56,7 +56,7 @@ namespace RPC
             // no matter what.
             Require(Runtime.CallingScriptHash == GAS.Hash);
             Require(Runtime.EntryScriptHash == GAS.Hash);
-            Require(move ==0 || move ==1 || move ==2);
+            Require(move == 0 || move == 1 || move == 2);
             Require(amount >= 1);
 
             if (((Transaction)Runtime.ScriptContainer).Script.Length > 64)
