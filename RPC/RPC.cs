@@ -27,13 +27,13 @@ namespace RPC
         static readonly UInt160 Owner = default;
 
         /// <summary>
-        /// If the isTure is not ture,
+        /// If the istrue is not true,
         /// then the transaction throw exception
         /// </summary>
-        /// <param name="isTure">true condition, has to be true to run</param>
+        /// <param name="isTrue">true condition, has to be true to run</param>
         /// <param name="msg">Transaction FAULT reason</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Require(bool isTure, string msg="Invalid") { if (!isTure) throw new Exception($"RPC::{msg}"); }
+        private static void Require(bool isTrue, string msg="Invalid") { if (!isTrue) throw new Exception($"RPC::{msg}"); }
 
         [Safe]
         public static void CheckPaused() { Require(!StateStorage.IsPaused(), "paused"); }
@@ -55,6 +55,7 @@ namespace RPC
             // I am gonna check all parameters 
             // no matter what.
             Require(Runtime.CallingScriptHash == GAS.Hash);
+            Require(Runtime.EntryScriptHash == GAS.Hash);
             Require(move ==0 || move ==1 || move ==2);
             Require(amount >= 1);
 
