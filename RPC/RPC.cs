@@ -19,6 +19,7 @@ namespace RPC
     [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
     public partial class RPC : SmartContract
     {
+
         //private enum Move
         //{
         //    Rock,
@@ -26,8 +27,7 @@ namespace RPC
         //    Scissors
         //}
 
-        [InitialValue("NdNXZuBvxSqhDAnk3AANxubDd5JNrB4d3a", ContractParameterType.Hash160)]
-        static readonly UInt160 Owner = default;
+        private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, 0x14);
 
         /// <summary>
         /// If the istrue is not true,
@@ -39,37 +39,45 @@ namespace RPC
         private static void Require(bool isTrue, string msg = "Invalid") { if (!isTrue) throw new Exception($"RPC::{msg}"); }
 
         [Safe]
-        public static void CheckPaused() { Require(!StateStorage.IsPaused(), "paused"); }
-
-        [Safe]
-        public static UInt160 GetOwner()
-        {
-            var owner = OwnerMap.Get("owner");
-            return owner != null ? (UInt160)owner : Owner;
-        }
+        public static bool Paused() => StateStorage.IsPaused();
 
         [Safe]
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data)
         {
-            CheckPaused();
-            amount /= 100000000;
+            Require(!Paused());
+
+            // This is proposed by Chen Zhi Tong
+            // If the player pays more than twise of
+            // all the amount he loses, he can always win
+            // Since the contract can never win all the time.
+            BigInteger earn = 0;
+            var earnFrom = PlayerMap.Get(from);
+            if (earnFrom is not null) {
+                earn = (BigInteger)earnFrom;
+                Require(earn >= amount);
+            }
+
             var move = (byte)data;
 
             // I gonna check all parameters 
             // no matter what.
             Require(Runtime.CallingScriptHash == GAS.Hash);
-            Require(Runtime.EntryScriptHash == GAS.Hash);
+            Require(Runtime.EntryScriptHash == ((Transaction)Runtime.ScriptContainer).Hash);
             Require(move == 0 || move == 1 || move == 2);
-            Require(amount >= 1);
+            Require(amount >= 1_0000_0000);
             Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount);
 
-            if (((Transaction)Runtime.ScriptContainer).Script.Length > 64)
+            if (((Transaction)Runtime.ScriptContainer).Script.Length > 90)
                 throw new Exception("RPC::Transaction script length error.");
 
-            // if player wins, he gets 2 GAS
-            if (PlayerWin(move))
+            if (PlayerWin(move) && (ContractManagement.GetContract(from) is null))
+            {
                 // The bigger you play, the more you get
                 GAS.Transfer(Runtime.ExecutingScriptHash, from, 2 * amount);
+            }else{
+
+                PlayerMap.Put(from, amount+ earn);        
+            }
         }
 
         /// <summary>

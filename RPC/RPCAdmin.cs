@@ -1,4 +1,5 @@
 ﻿using Neo;
+using Neo.SmartContract;
 using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Native;
 using Neo.SmartContract.Framework.Services;
@@ -9,6 +10,10 @@ namespace RPC
 {
     public partial class RPC
     {
+
+        [InitialValue("NdNXZuBvxSqhDAnk3AANxubDd5JNrB4d3a", ContractParameterType.Hash160)]
+        static readonly UInt160 Owner = default;
+
         private static readonly StorageMap OwnerMap = new(Storage.CurrentContext, 0x16);
 
         public static bool Verify() => Runtime.CheckWitness(GetOwner());
@@ -23,6 +28,13 @@ namespace RPC
             Require(newOwner.IsValid, "RPC::UInt160 is invalid.");
             OwnerMap.Put("owner", newOwner);
             return GetOwner();
+        }
+
+        [Safe]
+        public static UInt160 GetOwner()
+        {
+            var owner = OwnerMap.Get("owner");
+            return owner != null ? (UInt160)owner : Owner;
         }
 
         public static void _deploy(object _, bool update)
