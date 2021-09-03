@@ -29,7 +29,9 @@ namespace RPC
 
         private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, 0x14);
 
-        // This fee suggestion makes sure that your transaction will not fail because of fee.
+        // This fee suggestion makes sure
+        // that your transaction will not
+        // fail because of fee.
         [Safe]
         public BigInteger GetFee() => 10000_0000;
 
@@ -80,7 +82,7 @@ namespace RPC
                 // The bigger you play, the more you get
                 GAS.Transfer(Runtime.ExecutingScriptHash, from, 2 * amount);
             }else{
-
+                // If the game `draw`s, it won't even reach here.
                 PlayerMap.Put(from, amount+ earn);        
             }
         }
