@@ -15,7 +15,7 @@ namespace RPC
     [DisplayName("GAME-RPC")]
     [ManifestExtra("Description", "This is a rock-paper-scissors game to test the random number.")]
     [SupportedStandards("NEP-11")]
-    [ContractPermission("*", "OnNEP11Payment")]
+    [ContractPermission("*", "onNEP11Payment")]
     [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
     public partial class RPC : SmartContract
     {
@@ -29,9 +29,14 @@ namespace RPC
 
         private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, 0x14);
 
+        // This fee suggestion makes sure that your transaction will not fail because of fee.
+        [Safe]
+        public BigInteger GetFee() => 10000_0000;
+
         /// <summary>
-        /// If the istrue is not true,
+        /// If the condition `istrue` does not hold,
         /// then the transaction throw exception
+        /// making transaction `FAULT`
         /// </summary>
         /// <param name="isTrue">true condition, has to be true to run</param>
         /// <param name="msg">Transaction FAULT reason</param>
@@ -47,8 +52,8 @@ namespace RPC
             Require(!Paused());
 
             // This is proposed by Chen Zhi Tong
-            // If the player pays more than twise of
-            // all the amount he loses, he can always win
+            // If the player pays more than  the
+            // amount he loses, he can always win
             // Since the contract can never win all the time.
             BigInteger earn = 0;
             var earnFrom = PlayerMap.Get(from);
@@ -90,7 +95,7 @@ namespace RPC
         /// <returns>is player wins </returns>
         private static bool PlayerWin(byte move)
         {
-            var random = (byte)Runtime.GetRandom() % 3;
+            var random = (byte)(Runtime.GetRandom() % 3);
             switch (random - move)
             {
                 case 1:
