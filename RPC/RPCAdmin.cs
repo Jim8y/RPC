@@ -14,7 +14,7 @@ namespace RPC
     ///  that has write permission must be owner only
     ///  
     ///  [SetOwner] -- confirmed by jinghui
-    ///  [_deploy]  -- ??
+    ///  [_deploy]  -- except this one, confirmed by jinghui
     ///  [Update]   -- confirmed by jinghui
     ///  [Destroy]  -- confirmed by jinghui
     ///  [Pause]    -- confirmed by jinghui
