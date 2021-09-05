@@ -66,7 +66,6 @@ namespace RPC
         /// <param name="from">the player address</param>
         /// <param name="amount">the amount of GAS the player bets</param>
         /// <param name="data">the move of the player</param>
-        [Safe]
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data)
         {
             // <2> -- confirmed by jinghui
