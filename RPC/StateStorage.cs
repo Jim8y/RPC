@@ -3,14 +3,17 @@
 namespace RPC
 {
     /// <summary>
-    /// Security requirement:
-    /// The method in this 
+    /// Security Requirement:
+    ///     the string of each state should be consistent
+    ///     make sure there is no typo issues.
+    ///     -- confirmed by jinghui
     /// </summary>
     public static class StateStorage
     {
         /// <summary>
         /// Security requirement:
-        /// The prefix should be unique in the contract: checked globally.
+        ///     The prefix should be unique in the contract: checked globally.
+        ///     -- confirmed by jinghui
         /// </summary>
         private static readonly StorageMap IndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.State);
 

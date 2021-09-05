@@ -1,5 +1,4 @@
 using Neo;
-using Neo.SmartContract;
 using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Native;
 using Neo.SmartContract.Framework.Services;
@@ -23,6 +22,7 @@ namespace RPC
         /// <summary>
         /// Security requirement:
         /// The prefix should be unique in the contract: checked globally.
+        /// -- confirmed by jinghui
         /// </summary>
         private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, (byte)StoragePrefix.Player);
 
@@ -59,7 +59,7 @@ namespace RPC
         /// if the contract is paused:  constrained internally
         /// 
         /// <3> The function call should not contain
-        /// any post contract calls and the entry 
+        /// any post contract call and the entry 
         /// contract should by `GAS` : yet to confirm
         ///  
         /// </summary>
@@ -69,6 +69,7 @@ namespace RPC
         [Safe]
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data)
         {
+            // <2> -- confirmed by jinghui
             Require(!Paused());
 
             // This is proposed by Chen Zhi Tong
@@ -87,16 +88,26 @@ namespace RPC
 
             // I gonna check all parameters 
             // no matter what.
+            // <3> -- yet to confirm
             Require(Runtime.CallingScriptHash == GAS.Hash);
             Require(Runtime.EntryScriptHash == ((Transaction)Runtime.ScriptContainer).Hash);
-            Require(move == 0 || move == 1 || move == 2);
-            Require(amount >= 1_0000_0000);
-            Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount);
-
             if (((Transaction)Runtime.ScriptContainer).Script.Length > 90)
                 throw new Exception("RPC::Transaction script length error.");
 
-            if (PlayerWin(move) && (ContractManagement.GetContract(from) is null))
+            // should not be called from a contract
+            // --confirmed
+            Require(ContractManagement.GetContract(from) is null);
+
+            // <1> -- confirmed by jinghui
+            Require(move == 0 || move == 1 || move == 2);
+
+            // <0> -- confirmed by jinghui
+            Require(amount >= 1_0000_0000);
+            Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount);
+
+            // Check all possible conditions
+            // --confirmed by jinghui
+            if (PlayerWin(move))
             {
                 // The bigger you play, the more you get
                 GAS.Transfer(Runtime.ExecutingScriptHash, from, 2 * amount);
@@ -120,14 +131,19 @@ namespace RPC
         ///     
         /// <1> the random must be 
         ///     evenly distributed
-        ///     among {0,1,2} :   constrained by runtime function
+        ///     among {0, 1, 2} :   constrained by runtime function
         /// 
         /// </summary>
         /// <param name="move">the player more in the rage [0, 2]</param>
         /// <returns>is player wins </returns>
         private static bool PlayerWin(byte move)
         {
+            // <1> Ensure that the random is evenly distributed
+            // -- confirmed by jinghui
             var random = (byte)(Runtime.GetRandom() % 3);
+
+            // Make sure all conditions are considered 
+            // -- confirmed by jinghui
             switch (random - move)
             {
                 case 1:
@@ -139,6 +155,11 @@ namespace RPC
         }
     }
 
+    /// <summary>
+    /// Security requirement:
+    ///     Each item has different value
+    ///     -- confirmed by jinghui
+    /// </summary>
     internal enum StoragePrefix
     {
         State = 0x14,
