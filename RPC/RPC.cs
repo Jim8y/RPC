@@ -18,7 +18,6 @@ namespace RPC
     [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
     public partial class RPC : SmartContract
     {
-
         /// <summary>
         /// Security requirement:
         /// The prefix should be unique in the contract: checked globally.
@@ -30,7 +29,7 @@ namespace RPC
         /// that your transaction will not
         /// fail because of fee insufficiency.
         [Safe]
-        public BigInteger GetFee() => 1_0000_0000; // temporary value, to be confirmed
+        public BigInteger GetFee() => 1518_2525; // temporary value, to be confirmed
 
         /// <summary>
         /// If the condition `istrue` does not hold,
@@ -55,7 +54,7 @@ namespace RPC
         /// <1> the data should be one 
         /// byte of value among {0,1,2}: constrained internally
         /// 
-        /// <2> transaction should be disabled
+        /// <2> transaction should be FAULT
         /// if the contract is paused:  constrained internally
         /// 
         /// <3> The function call should not contain
@@ -71,8 +70,10 @@ namespace RPC
             // <2> -- confirmed by jinghui
             Require(!Paused());
 
+            if (from == GetOwner()) return;
+
             // This is proposed by Chen Zhi Tong
-            // If the player pays more than  the
+            // If the player pays more than the
             // amount he loses, he can always win
             // Since the contract can never win all the time.
             BigInteger earn = 0;
@@ -80,7 +81,7 @@ namespace RPC
             if (earnFrom is not null)
             {
                 earn = (BigInteger)earnFrom;
-                Require(earn >= amount);
+                Require(earn >= amount, "You can not bet that much.");
             }
 
             var move = (byte)data;
@@ -88,21 +89,21 @@ namespace RPC
             // I gonna check all parameters 
             // no matter what.
             // <3> -- yet to confirm
-            Require(Runtime.CallingScriptHash == GAS.Hash);
-            Require(Runtime.EntryScriptHash == ((Transaction)Runtime.ScriptContainer).Hash);
-            if (((Transaction)Runtime.ScriptContainer).Script.Length > 90)
-                throw new Exception("RPC::Transaction script length error.");
+            Require(Runtime.CallingScriptHash == GAS.Hash, "Script format error.");
+            //Require(Runtime.EntryScriptHash == GAS.Hash, "Runtime.EntryScriptHash == ((Transaction)Runtime.ScriptContainer).Hash");
+            if (((Transaction)Runtime.ScriptContainer).Script.Length > 96)
+                throw new Exception("RPC::Transaction script length error. No wapper contract or extra script allowed.");
 
             // should not be called from a contract
             // --confirmed
-            Require(ContractManagement.GetContract(from) is null);
+            Require(ContractManagement.GetContract(from) is null, "ContractManagement.GetContract(from) is null");
 
             // <1> -- confirmed by jinghui
-            Require(move == 0 || move == 1 || move == 2);
+            Require(move == 0 || move == 1 || move == 2, "Invalid move.");
 
             // <0> -- confirmed by jinghui
-            Require(amount >= 1_0000_0000);
-            Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount);
+            Require(amount >= 1_0000_0000, "Please at least bet 1 GAS.");
+            Require(GAS.BalanceOf(Runtime.ExecutingScriptHash) >= amount, "Insufficient balance");
 
             // Check all possible conditions
             // --confirmed by jinghui
@@ -145,10 +146,12 @@ namespace RPC
             // -- confirmed by jinghui
             switch (random - move)
             {
+                // player lost tx in testnet 0xa9babe4fda51226f12c7edd4b3e0978881c46d9eb76540d093265c5709b3f6fd
                 case 1:
                 case -2: return false;
                 case 0: throw new Exception();
                 case -1:
+                // player win tx in testnet 0x495b538b8497b2d45b68027f6a2656f08a90012c7dfe7c2842c5673094408ffe 
                 default: return true;
             }
         }

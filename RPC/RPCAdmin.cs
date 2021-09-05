@@ -24,7 +24,7 @@ namespace RPC
     public partial class RPC
     {
 
-        [InitialValue("NdNXZuBvxSqhDAnk3AANxubDd5JNrB4d3a", ContractParameterType.Hash160)]
+        [InitialValue("NaA5nQieb5YGg5nSFjhJMVEXQCQ5HdukwP", ContractParameterType.Hash160)]
         static readonly UInt160 Owner = default;
 
         /// <summary>
