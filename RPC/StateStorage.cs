@@ -4,8 +4,8 @@ namespace RPC
 {
     /// <summary>
     /// Security Requirement:
-    ///     the string of each state should be consistent
-    ///     make sure there is no typo issues.
+    ///     the string of each state should be consistent,
+    ///     making sure there is no typo issue.
     ///     -- confirmed by jinghui
     /// </summary>
     public static class StateStorage
