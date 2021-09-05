@@ -1,3 +1,18 @@
+// Copyright (C) 2021 Jinghui Liao.
+// This file belongs to the NEO-GAME-RPC contract developed for neo N3
+// Date: Sep-2-2021 
+// 
+// Special thanks to Mr. Chen Zhi Tong and Miss Duck
+// for reviewing this contract.
+//
+// The NEO-GAME-RPC is free smart contract distributed under the MIT software 
+// license, see the accompanying file LICENSE in the main directory of
+// the project or http://www.opensource.org/licenses/mit-license.php 
+// for more details.
+// 
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using Neo;
 using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Native;
@@ -30,6 +45,8 @@ namespace RPC
         /// fail because of fee insufficiency.
         [Safe]
         public BigInteger GetFee() => 1518_2525; // temporary value, to be confirmed
+
+        public string SourceCode => "https://github.com/Liaojinghui/RPC";
 
         /// <summary>
         /// If the condition `istrue` does not hold,

@@ -1,4 +1,16 @@
-﻿using Neo;
+﻿// Copyright (C) 2021 Jinghui Liao.
+// This file belongs to the NEO-GAME-RPC contract developed for neo N3
+// Date: Sep-2-2021 
+//
+// The NEO-GAME-RPC is free smart contract distributed under the MIT software 
+// license, see the accompanying file LICENSE in the main directory of
+// the project or http://www.opensource.org/licenses/mit-license.php 
+// for more details.
+// 
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
+using Neo;
 using Neo.SmartContract;
 using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Native;
