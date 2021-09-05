@@ -8,20 +8,41 @@ using System.Runtime.CompilerServices;
 
 namespace RPC
 {
+    /// <summary>
+    /// Security Requirement:
+    ///  All public functions in this partial class
+    ///  that has write permission must be owner only
+    /// </summary>
     public partial class RPC
     {
 
         [InitialValue("NdNXZuBvxSqhDAnk3AANxubDd5JNrB4d3a", ContractParameterType.Hash160)]
         static readonly UInt160 Owner = default;
 
-        private static readonly StorageMap OwnerMap = new(Storage.CurrentContext, 0x16);
+        /// <summary>
+        /// Security requirement:
+        /// The prefix should be unique in the contract: checked globally.
+        /// </summary>
+        private static readonly StorageMap OwnerMap = new(Storage.CurrentContext, (byte)StoragePrefix.Owner);
 
         public static bool Verify() => Runtime.CheckWitness(GetOwner());
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void OwnerOnly() { if (!Verify()) throw new Exception("No authorization."); }
 
 
+        /// <summary>
+        /// Security Requirements:
+        /// <0> Only the owner of the contract
+        /// are allowed to call this function: constrained internally
+        /// 
+        /// <1> the new address should be 
+        /// a valid address: constrained internally
+        /// 
+        /// </summary>
+        /// <param name="newOwner"></param>
+        /// <returns></returns>
         public static UInt160 SetOwner(UInt160 newOwner)
         {
             OwnerOnly();

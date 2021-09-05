@@ -12,7 +12,7 @@ namespace RPC
 {
     [ManifestExtra("Author", "Jinghui Liao")]
     [ManifestExtra("Email", "jinghui@wayne.edu")]
-    [DisplayName("GAME-RPC")]
+    [DisplayName("NEO-GAME-RPC")]
     [ManifestExtra("Description", "This is a rock-paper-scissors game to test the random number.")]
     [SupportedStandards("NEP-11")]
     [ContractPermission("*", "onNEP11Payment")]
@@ -20,20 +20,17 @@ namespace RPC
     public partial class RPC : SmartContract
     {
 
-        //private enum Move
-        //{
-        //    Rock,
-        //    Paper,
-        //    Scissors
-        //}
+        /// <summary>
+        /// Security requirement:
+        /// The prefix should be unique in the contract: checked globally.
+        /// </summary>
+        private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, (byte)StoragePrefix.Player);
 
-        private static readonly StorageMap PlayerMap = new(Storage.CurrentContext, 0x14);
-
-        // This fee suggestion makes sure
-        // that your transaction will not
-        // fail because of fee.
+        /// This fee suggestion makes sure
+        /// that your transaction will not
+        /// fail because of fee insufficiency.
         [Safe]
-        public BigInteger GetFee() => 10000_0000;
+        public BigInteger GetFee() => 1_0000_0000; // temporary value, to be confirmed
 
         /// <summary>
         /// If the condition `istrue` does not hold,
@@ -45,9 +42,30 @@ namespace RPC
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Require(bool isTrue, string msg = "Invalid") { if (!isTrue) throw new Exception($"RPC::{msg}"); }
 
-        [Safe]
-        public static bool Paused() => StateStorage.IsPaused();
+        private static bool Paused() => StateStorage.IsPaused();
 
+        /// <summary>
+        /// Security requirements:
+        /// <0> the amount has to be an 
+        ///  positive integer greater 
+        ///  than 1_0000_0000  but 
+        ///  less than the amount the 
+        ///  contract wins from the player: constrained internally
+        ///  
+        /// <1> the data should be one 
+        /// byte of value among {0,1,2}: constrained internally
+        /// 
+        /// <2> transaction should be disabled
+        /// if the contract is paused:  constrained internally
+        /// 
+        /// <3> The function call should not contain
+        /// any post contract calls and the entry 
+        /// contract should by `GAS` : yet to confirm
+        ///  
+        /// </summary>
+        /// <param name="from">the player address</param>
+        /// <param name="amount">the amount of GAS the player bets</param>
+        /// <param name="data">the move of the player</param>
         [Safe]
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data)
         {
@@ -59,7 +77,8 @@ namespace RPC
             // Since the contract can never win all the time.
             BigInteger earn = 0;
             var earnFrom = PlayerMap.Get(from);
-            if (earnFrom is not null) {
+            if (earnFrom is not null)
+            {
                 earn = (BigInteger)earnFrom;
                 Require(earn >= amount);
             }
@@ -81,9 +100,11 @@ namespace RPC
             {
                 // The bigger you play, the more you get
                 GAS.Transfer(Runtime.ExecutingScriptHash, from, 2 * amount);
-            }else{
+            }
+            else
+            {
                 // If the game `draw`s, it won't even reach here.
-                PlayerMap.Put(from, amount+ earn);        
+                PlayerMap.Put(from, amount + earn);
             }
         }
 
@@ -92,6 +113,15 @@ namespace RPC
         /// return `true` if the player wins
         /// return `false` if the contract wins
         /// throw exception if draw
+        /// 
+        /// Security requirements:
+        /// <0> the move must be 
+        ///     among {0, 1, 2} :  constrained by calling method
+        ///     
+        /// <1> the random must be 
+        ///     evenly distributed
+        ///     among {0,1,2} :   constrained by runtime function
+        /// 
         /// </summary>
         /// <param name="move">the player more in the rage [0, 2]</param>
         /// <returns>is player wins </returns>
@@ -108,4 +138,18 @@ namespace RPC
             }
         }
     }
+
+    internal enum StoragePrefix
+    {
+        State = 0x14,
+        Owner = 0x15,
+        Player = 0x16,
+    }
+
+    //private enum Move
+    //{
+    //    Rock,
+    //    Paper,
+    //    Scissors
+    //}
 }

@@ -2,9 +2,17 @@
 
 namespace RPC
 {
+    /// <summary>
+    /// Security requirement:
+    /// The method in this 
+    /// </summary>
     public static class StateStorage
     {
-        private static readonly StorageMap IndexMap = new(Storage.CurrentContext, 0x15);
+        /// <summary>
+        /// Security requirement:
+        /// The prefix should be unique in the contract: checked globally.
+        /// </summary>
+        private static readonly StorageMap IndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.State);
 
         private static readonly string key = "state";
 
