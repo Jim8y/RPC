@@ -7,7 +7,9 @@ Contact address: 0x9c01a8640dff7c086dca99758d71645f57164d7c
 ## Usage
 
 send at least 1 gas to 0x9c01a8640dff7c086dca99758d71645f57164d7c and attach an integer in the range [0,2] as move to the transaction.
-
+```shell
+send 0xd2a4cff31913016155e38e474a2c06d08be276cf 0x9c01a8640dff7c086dca99758d71645f57164d7c 1 [0 or 1 or 2]
+```
 ## Core method
 
 ```C#
